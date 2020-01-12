@@ -1,0 +1,5 @@
+username = "orangeerrs"
+password = "test"
+client_id = "test"
+client_secret = "test"
+user_agent = "This is a bot for /r/Daily3D to post daily 3D prompts"

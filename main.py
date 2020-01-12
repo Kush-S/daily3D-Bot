@@ -12,8 +12,8 @@ def bot_login():
 
 
 def post_daily_prompt(reddit):
-
-    # Do stuff here
+    title = "Daily3D#" + str(config.daily_counter)
+    reddit.subreddit("test").submit(title, selftext='')
 
 reddit = bot_login()
 post_daily_prompt(reddit)
