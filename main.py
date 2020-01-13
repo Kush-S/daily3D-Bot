@@ -10,10 +10,32 @@ def bot_login():
 
     return reddit
 
-
 def post_daily_prompt(reddit):
-    title = "Daily3D#" + str(config.daily_counter)
-    reddit.subreddit("test").submit(title, selftext='')
+    with open("counters.txt") as file:
+        for i, line in enumerate(file):
+            if i == 0:
+                daily_counter = line.rstrip()
+            if i == 1:
+                total_prompts = line.rstrip()
+    file.close()
 
-reddit = bot_login()
-post_daily_prompt(reddit)
+    with open("daily_prompts.txt") as file:
+        if int(daily_counter) > int(total_prompts):
+            daily_prompt = "too far"
+            print("too far")
+        else:
+            for i, line in enumerate(file):
+                if i == int(daily_counter) - 1:
+                    daily_prompt = line.rstrip()
+        file.close()
+
+    title = "Daily3D#" + daily_counter + "--" + daily_prompt.capitalize()
+    print(title)
+    # reddit.subreddit("test").submit(title, selftext='')
+
+def main():
+    reddit = bot_login()
+    post_daily_prompt(reddit)
+
+if __name__ == "__main__":
+    main()
