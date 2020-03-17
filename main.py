@@ -11,48 +11,57 @@ def bot_login():
 
     return reddit
 
-def post_daily_prompt(reddit):
-    # Get daily_counter line, which is first line,
-    # and increment it if there are new prompts left,
-    # otherwise choose a random prompt from used_prompts.txt
+def get_title(reddit):
+    old_prompts = []
+
+    # Get the 7 newsest prompts,
+    # and strip off some of the words to get day number and prompt later
+    submissions = reddit.subreddit('Daily3D').new(limit=30)
+    for post in submissions:
+        if "Daily3D#" in post.title and "--" in post.title:
+            old_prompts.append(post.title.split("Daily3D#")[1])
+
+    # Get the day of the latest prompt and add 1 for new day
+    day = int(old_prompts[0].split("--")[0]) + 1
+    print("day: " + str(day))
+
+    # Store the 7 latest prompts by themselves in old_prompts
+    length = len(old_prompts)
+    for i in range(length):
+        old_prompts[i] = old_prompts[i].split("--")[1]
+
+    new_prompt = get_prompt().capitalize()
+    print("New prompt: " + new_prompt)
+    print("List is: " + str(old_prompts))
+    while new_prompt in old_prompts:
+        new_prompt = get_prompt().capitalize()
+        print(new_prompt)
+
+    title = "Daily3D#" + str(day) + "--" + new_prompt
+    return title
+
+def get_prompt():
+    # Get total number of prompts
     lines = open("counters.txt").read().splitlines()
-    daily_counter = lines[0].rstrip()
-    prompt_counter = lines[1].rstrip()
-    total_prompts = lines[2].rstrip()
+    total_prompts = lines[0].rstrip()
 
-    # If no prompts left, choose random one
-    # Increment daily counter (lines[0])
-    if int(prompt_counter) > int(total_prompts):
-        prompt_counter = random.randint(1, int(total_prompts))
-        daily_prompt = get_prompt(prompt_counter)
-        print("too far")
-        lines[0] = str(int(lines[0].rstrip()) + 1)
-        open("counters.txt", "w").write("\n".join(lines))
+    # Generate random number
+    random_num = random.randint(1, int(total_prompts))
 
-    else:
-        # If prompts left still, use it
-        # Increment prompt_counter (lines[1]) and total_prompts (lines[2])
-        lines[0] = str(int(lines[0].rstrip()) + 1)
-        lines[1] = str(int(lines[1].rstrip()) + 1)
-        open("counters.txt", "w").write("\n".join(lines))
-
-        daily_prompt = get_prompt(int(prompt_counter))
-
-    title = "Daily3D#" + daily_counter + "--" + daily_prompt.capitalize()
-    print(title)
-    # reddit.subreddit("test").submit(title, selftext='')
-
-def get_prompt(prompt_counter):
+    # Choose prompt from prompts.txt
+    daily_prompt = ""
     with open("prompts.txt") as daily_prompt_file:
         for i, line in enumerate(daily_prompt_file):
-            if i == prompt_counter - 1:
+            if i == random_num - 1:
                 daily_prompt = line.rstrip()
     daily_prompt_file.close()
     return daily_prompt
 
-def main():
+
+def main(event, context):
     reddit = bot_login()
-    post_daily_prompt(reddit)
+    title = get_title(reddit)
+    reddit.subreddit("Daily3D").submit(title, selftext='')
 
 if __name__ == "__main__":
     main()
