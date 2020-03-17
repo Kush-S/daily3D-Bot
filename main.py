@@ -61,7 +61,7 @@ def get_prompt():
 def main(event, context):
     reddit = bot_login()
     title = get_title(reddit)
-    reddit.subreddit("Daily3D").submit(title, selftext='')
+    reddit.subreddit("Daily3D").submit(title, selftext='', send_replies=False)
 
 if __name__ == "__main__":
     main()
