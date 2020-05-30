@@ -14,7 +14,7 @@ def bot_login():
 def get_title(reddit):
     old_prompts = []
 
-    # Get the 7 newsest prompts,
+    # Get the 30 newsest prompts,
     # and strip off some of the words to get day number and prompt later
     submissions = reddit.subreddit('Daily3D').new(limit=30)
     for post in submissions:
@@ -25,7 +25,7 @@ def get_title(reddit):
     day = int(old_prompts[0].split("--")[0]) + 1
     print("day: " + str(day))
 
-    # Store the 7 latest prompts by themselves in old_prompts
+    # Store the 30 latest prompts by themselves in old_prompts
     length = len(old_prompts)
     for i in range(length):
         old_prompts[i] = old_prompts[i].split("--")[1]
