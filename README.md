@@ -11,4 +11,4 @@ To get this bot working, you will need the following files with these variables
   - No variables, but a list of prompts for the bot to choose from.
 * counters.txt
   - daily_counter
-    - Should start at 1 for day 1
+    - Number of prompts in daily_prompts.txt
