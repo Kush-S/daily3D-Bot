@@ -11,8 +11,9 @@ def main():
     recent_prompts = []
     available_prompts = []
     bucket_files = []
-    GENERAL_PROMPTS_FILE = "general_prompts.txt"
-    PRIORITY_PROMPTS_FILE = "priority_prompts.txt"
+    GENERAL_PROMPTS_FILE = 'general_prompts.txt'
+    PRIORITY_PROMPTS_FILE = 'priority_prompts.txt'
+    file_used = ''
 
     if os.path.getsize("prompts.txt") <= 0:
         print("prompts.txt file is empty. Stopping program")
@@ -22,13 +23,16 @@ def main():
 
     if PRIORITY_PROMPTS_FILE in bucket_files and not check_aws_empty_file(PRIORITY_PROMPTS_FILE):
         available_prompts = get_available_prompts(PRIORITY_PROMPTS_FILE)
+        file_used = PRIORITY_PROMPTS_FILE
         print("priority_prompts has prompts")
     elif GENERAL_PROMPTS_FILE in bucket_files and not check_aws_empty_file(GENERAL_PROMPTS_FILE):
         available_prompts = get_available_prompts(GENERAL_PROMPTS_FILE)
+        file_used = GENERAL_PROMPTS_FILE
         print("general_prompts has prompts")
     else:
         create_aws_s3_file(GENERAL_PROMPTS_FILE)
         available_prompts = get_available_prompts(GENERAL_PROMPTS_FILE)
+        file_used = GENERAL_PROMPTS_FILE
 
     reddit = bot_login()
     recent_prompts = get_recent_prompts(reddit, NUMBER_OF_DAYS)
@@ -44,11 +48,14 @@ def main():
                 collisions += collisions
 
     date_today = get_date_today()
-    print(new_prompt)
     title = config.reddit_submission_prefix + ' for ' + date_today + '--' + new_prompt
-    reddit.subreddit(config.reddit_subreddit).submit(title, selftext='', send_replies=False)
+    print(title)
+    # reddit.subreddit(config.reddit_subreddit).submit(title, selftext='', send_replies=False)
+    # available_prompts.remove(new_prompt)
+    # store_available_prompts(file_used, available_prompts)
+    return
 
-
+# Helpers methods------------
 def get_recent_prompts(reddit, NUMBER_OF_DAYS):
     recent_prompts = []
     old_prompts = []
@@ -63,7 +70,6 @@ def check_aws_empty_file(file_name):
     aws_s3 = get_aws_s3_session()
 
     if aws_s3.Bucket(config.aws_s3_bucket_name).Object(file_name).content_length <= 0:
-        print(aws_s3.Bucket(config.aws_s3_bucket_name).Object(file_name).content_length)
         return True
     else:
         return False
@@ -73,13 +79,11 @@ def get_available_prompts(file_name):
 
     # These 2 lines so single line isn't too long
     file_data = aws_s3.Object(config.aws_s3_bucket_name, file_name)
-    file_data = file_data.get()['Body'].read().decode().split()
+    file_data = file_data.get()['Body'].read().decode().split("\n")
 
     for line in file_data:
         prompts.append(line)
 
-    for prompt in prompts:
-        print(prompt)
     return prompts
 def get_aws_s3_session():
     aws_s3_session = boto3.Session(
@@ -113,8 +117,12 @@ def generate_new_promp(prompt_list):
     random_num = random.randint(1, len(prompt_list) - 1)
     return prompt_list[random_num]
 def get_date_today():
-    today = datetime.today().strftime("%m/%d/%y")
+    date_today = datetime.today().strftime("%m/%d/%y")
+    return date_today
+def store_available_prompts(file_name, prompts):
+    aws_s3 = get_aws_s3_session()
+    aws_object = aws_s3.Object(config.aws_s3_bucket_name, file_name)
+    aws_object.put(Body=str(prompts))
     return
-# def store_available_prompts(file_name):
 if __name__ == "__main__":
     main()
