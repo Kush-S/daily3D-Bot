@@ -37,7 +37,7 @@ def main():
     recent_prompts = get_recent_prompts(reddit, NUMBER_OF_DAYS)
 
     new_prompt = generate_new_promp(available_prompts)
-
+    collisions = 0
     if file_used != PRIORITY_PROMPTS_FILE:
         if new_prompt in recent_prompts:
             collisions = 0
@@ -46,11 +46,11 @@ def main():
                 if new_prompt not in recent_prompts:
                     break
                 else:
-                    collisions += collisions
+                    collisions += 1
 
     date_today = get_date_today()
     title = config.reddit_submission_prefix + ' for ' + date_today + '--' + new_prompt
-    # reddit.subreddit(config.reddit_subreddit).submit(title, selftext='', send_replies=False)
+    reddit.subreddit(config.reddit_subreddit).submit(title, selftext='', send_replies=False)
     print(title)
     available_prompts.remove(new_prompt)
     store_available_prompts(file_used, available_prompts)
@@ -59,13 +59,12 @@ def main():
 # Helpers methods------------
 def get_recent_prompts(reddit, NUMBER_OF_DAYS):
     recent_prompts = []
-    old_prompts = []
     post_prefix = config.reddit_submission_prefix
 
     submissions = reddit.subreddit(config.reddit_subreddit).new(limit=NUMBER_OF_DAYS)
     for post in submissions:
         if post_prefix in post.title and "--" in post.title:
-            old_prompts.append(post.title.split("--")[1])
+            recent_prompts.append(post.title.split("--")[1])
     return recent_prompts
 def check_aws_empty_file(file_name):
     aws_s3 = get_aws_s3_session()
