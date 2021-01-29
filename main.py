@@ -50,7 +50,8 @@ def main():
 
     date_today = get_date_today()
     title = config.reddit_submission_prefix + ' for ' + date_today + '--' + new_prompt
-    reddit.subreddit(config.reddit_subreddit).submit(title, selftext='', send_replies=False)
+    # reddit.subreddit(config.reddit_subreddit).submit(title, selftext='', send_replies=False)
+    print(title)
     available_prompts.remove(new_prompt)
     store_available_prompts(file_used, available_prompts)
     return
@@ -130,7 +131,7 @@ def store_available_prompts(file_name, prompts):
 
     aws_s3 = get_aws_s3_session()
     aws_object = aws_s3.Object(config.aws_s3_bucket_name, file_name)
-    aws_object.put(Body=prompt_string)
+    aws_object.put(Body=prompt_string, ContentType='text/plain')
     return
 if __name__ == "__main__":
     main()
