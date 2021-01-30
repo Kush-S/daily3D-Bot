@@ -9,7 +9,7 @@ def main():
     NUMBER_OF_DAYS = 365
     MAX_PROMPT_CHECKS = 1000
     recent_prompts = []
-    available_prompts = []
+    available_prompts_data = []
     bucket_files = []
     GENERAL_PROMPTS_FILE = 'general_prompts.txt'
     PRIORITY_PROMPTS_FILE = 'priority_prompts.txt'
@@ -22,37 +22,41 @@ def main():
     bucket_files = get_bucket_files()
 
     if PRIORITY_PROMPTS_FILE in bucket_files and not check_aws_empty_file(PRIORITY_PROMPTS_FILE):
-        available_prompts = get_s3_available_prompts(PRIORITY_PROMPTS_FILE)
+        available_prompts_data = get_s3_available_prompts(PRIORITY_PROMPTS_FILE)
         file_used = PRIORITY_PROMPTS_FILE
     elif GENERAL_PROMPTS_FILE in bucket_files and not check_aws_empty_file(GENERAL_PROMPTS_FILE):
-        available_prompts = get_s3_available_prompts(GENERAL_PROMPTS_FILE)
+        available_prompts_data = get_s3_available_prompts(GENERAL_PROMPTS_FILE)
         file_used = GENERAL_PROMPTS_FILE
     else:
         local_prompts = get_local_prompts()
         store_available_prompts(GENERAL_PROMPTS_FILE, local_prompts)
-        available_prompts = get_s3_available_prompts(GENERAL_PROMPTS_FILE)
+        available_prompts_data = get_s3_available_prompts(GENERAL_PROMPTS_FILE)
         file_used = GENERAL_PROMPTS_FILE
 
     reddit = bot_login()
     recent_prompts = get_recent_prompts(reddit, NUMBER_OF_DAYS)
-    new_prompt = generate_new_promp(available_prompts)
+    new_prompt_data = generate_new_promp(available_prompts_data)
 
     if file_used != PRIORITY_PROMPTS_FILE:
-        if new_prompt in recent_prompts:
+        if new_prompt_data.split('||')[0].strip() in recent_prompts:
             collisions = 0
             while collisions <= MAX_PROMPT_CHECKS:
-                new_prompt = generate_new_promp(available_prompts)
-                if new_prompt not in recent_prompts:
+                new_prompt_data = generate_new_promp(available_prompts_data)
+                if new_prompt_data.split('||')[0].strip() not in recent_prompts:
                     break
                 else:
                     collisions += 1
 
     date_today = get_date_today()
-    title = config.reddit_submission_prefix + ' for ' + date_today + '--' + new_prompt
-    reddit.subreddit(config.reddit_subreddit).submit(title, selftext='', send_replies=False)
+    title = config.reddit_submission_prefix + ' for ' + date_today + '--' + new_prompt_data.split('||')[0].strip()
 
-    available_prompts.remove(new_prompt)
-    store_available_prompts(file_used, available_prompts)
+    if '||' in new_prompt_data:
+        reddit.subreddit(config.reddit_subreddit).submit(title, selftext=new_prompt_data.split('||')[1].strip(), send_replies=False)
+    else:
+        reddit.subreddit(config.reddit_subreddit).submit(title, selftext='', send_replies=False)
+
+    available_prompts_data.remove(new_prompt_data)
+    store_available_prompts(file_used, available_prompts_data)
     return
 
 # Helpers methods------------
@@ -74,15 +78,15 @@ def check_aws_empty_file(file_name):
         return False
 def get_s3_available_prompts(file_name):
     aws_s3 = get_aws_s3_session()
-    prompts = []
+    prompts_data = []
 
     # These 2 lines so single line isn't too long
     file_data = aws_s3.Object(config.aws_s3_bucket_name, file_name)
     file_data = file_data.get()['Body'].read().decode().split("\n")
 
     for line in file_data:
-        prompts.append(line)
-    return prompts
+        prompts_data.append(line)
+    return prompts_data
 def get_local_prompts():
     prompt_list = []
     prompt_file = open('prompts.txt', 'r')
@@ -113,9 +117,9 @@ def bot_login():
             client_secret = config.reddit_client_secret,
             user_agent = config.reddit_user_agent)
     return reddit
-def generate_new_promp(prompt_list):
-    random_num = random.randint(0, len(prompt_list) - 1)
-    return prompt_list[random_num]
+def generate_new_promp(prompts_data):
+    random_num = random.randint(0, len(prompts_data) - 1)
+    return prompts_data[random_num]
 def get_date_today():
     date_today = datetime.today().strftime("%m/%d/%y")
     return date_today
