@@ -35,9 +35,8 @@ def main():
 
     reddit = bot_login()
     recent_prompts = get_recent_prompts(reddit, NUMBER_OF_DAYS)
-
     new_prompt = generate_new_promp(available_prompts)
-    collisions = 0
+
     if file_used != PRIORITY_PROMPTS_FILE:
         if new_prompt in recent_prompts:
             collisions = 0
@@ -51,7 +50,7 @@ def main():
     date_today = get_date_today()
     title = config.reddit_submission_prefix + ' for ' + date_today + '--' + new_prompt
     reddit.subreddit(config.reddit_subreddit).submit(title, selftext='', send_replies=False)
-    print(title)
+
     available_prompts.remove(new_prompt)
     store_available_prompts(file_used, available_prompts)
     return
