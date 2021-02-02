@@ -5,9 +5,9 @@ import random
 import boto3
 from datetime import datetime
 
-def main():
-    NUMBER_OF_DAYS = 365
-    MAX_PROMPT_CHECKS = 1000
+def main(event, context):
+    NUMBER_OF_DAYS = config.reddit_days_of_recent_prompts
+    MAX_PROMPT_CHECKS = config.reddit_max_prompt_checks
     recent_prompts = []
     available_prompts_data = []
     bucket_files = []
@@ -21,6 +21,7 @@ def main():
 
     bucket_files = get_bucket_files()
 
+    # Choosing file to use
     if PRIORITY_PROMPTS_FILE in bucket_files and not check_aws_empty_file(PRIORITY_PROMPTS_FILE):
         available_prompts_data = get_s3_available_prompts(PRIORITY_PROMPTS_FILE)
         file_used = PRIORITY_PROMPTS_FILE
@@ -37,6 +38,8 @@ def main():
     recent_prompts = get_recent_prompts(reddit, NUMBER_OF_DAYS)
     new_prompt_data = generate_new_promp(available_prompts_data)
 
+    # Make sure prompt has not been used in a while
+    # Or just choose one if taking too long to decide
     if file_used != PRIORITY_PROMPTS_FILE:
         if new_prompt_data.split('||')[0].strip() in recent_prompts:
             collisions = 0
@@ -47,13 +50,14 @@ def main():
                 else:
                     collisions += 1
 
-    date_today = get_date_today()
-    title = config.reddit_submission_prefix + ' for ' + date_today + '--' + new_prompt_data.split('||')[0].strip()
+    # Prompt now decided
+    new_prompt = new_prompt_data.split('||')[0].strip()
+    new_prompt_body = get_prompt_body(new_prompt_data)
 
-    if '||' in new_prompt_data:
-        reddit.subreddit(config.reddit_subreddit).submit(title, selftext=new_prompt_data.split('||')[1].strip(), send_replies=False)
-    else:
-        reddit.subreddit(config.reddit_subreddit).submit(title, selftext='', send_replies=False)
+    date_today = get_date_today()
+    title = config.reddit_submission_prefix + ' for ' + date_today + '--' + new_prompt
+
+    reddit.subreddit(config.reddit_subreddit).submit(title, selftext=new_prompt_body, send_replies=False)
 
     available_prompts_data.remove(new_prompt_data)
     store_available_prompts(file_used, available_prompts_data)
@@ -121,8 +125,14 @@ def generate_new_promp(prompts_data):
     random_num = random.randint(0, len(prompts_data) - 1)
     return prompts_data[random_num]
 def get_date_today():
-    date_today = datetime.today().strftime("%m/%d/%y")
+    date_today = datetime.today().strftime("%y/%m/%d")
     return date_today
+def get_prompt_body(prompt_data):
+    if '||' in prompt_data:
+        prompt_body = prompt_data.split('||')[1].strip().replace(r'\n', '\n')
+    else:
+        prompt_body = ''
+    return prompt_body
 def store_available_prompts(file_name, prompts):
     prompt_string = ''
 
