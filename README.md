@@ -2,7 +2,7 @@
 
 This bot uses a list of prompts provided to it, chooses 1 at random, and posts it every time it is run. The bot must be run every time it needs to post a new prompt, for example by AWS Lambda, but the python code can be run locally as well. AWS S3 is required currently, as it uses that for file storage.
 
-To start running this bot on Lambda, copy code from 'main.py', and create 'config.py' and 'prompts.txt' files into it. Lambda needs to use AWS Layers with the [PRAW library](https://praw.readthedocs.io/en/latest/) in it. If running locally and not on Lambda, make sure PRAW is installed locally.
+To start running this bot on Lambda, copy code from 'main.py', and create 'config.py' and 'prompts.txt' files into it. Lambda needs to use AWS Layers with the [PRAW library](https://praw.readthedocs.io/en/latest/) in it. For your convenience, the praw-aws-layer.zip is provided. You can upload that zip while creating a layer. If running locally and not on Lambda, make sure PRAW is installed locally.
 
 ### Services required
 * Reddit account with access to post on subreddit you want to post o
