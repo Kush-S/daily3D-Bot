@@ -28,20 +28,20 @@ To start running this bot on Lambda, copy code from 'main.py', and create 'confi
     1950's diner ||Any angle/shot from a diner-or any objects from it.\n\nOr just the whole diner.
     Track/railway|| LONG TRACKS
     ```
-  * config.py - Contains config information about Reddit and AWS account. These are variables the bot will be using. These are required.
-    - reddit_username = 'NULL'
-    - reddit_password = 'NULL'
-    - reddit_client_id = 'NULL'
-    - reddit_client_secret = 'NULL'
-    - reddit_user_agent = 'NULL'
-    - reddit_subreddit = 'NULL'
-    - reddit_submission_prefix = 'NULL'
-    - reddit_days_of_recent_prompts = 365
-    - reddit_max_prompt_checks = 1000
-    - aws_s3_access_key_id = 'NULL'
-    - aws_s3_secret_access_key = 'NULL'
-    - aws_s3_bucket_region = 'NULL'
-    - aws_s3_bucket_name = 'NULL'
+* config.py - Contains config information about Reddit and AWS account. These are variables the bot will be using. These are required.
+  - reddit_username = 'NULL'
+  - reddit_password = 'NULL'
+  - reddit_client_id = 'NULL'
+  - reddit_client_secret = 'NULL'
+  - reddit_user_agent = 'NULL'
+  - reddit_subreddit = 'NULL'
+  - reddit_submission_prefix = 'NULL'
+  - reddit_days_of_recent_prompts = 365
+  - reddit_max_prompt_checks = 1000
+  - aws_s3_access_key_id = 'NULL'
+  - aws_s3_secret_access_key = 'NULL'
+  - aws_s3_bucket_region = 'NULL'
+  - aws_s3_bucket_name = 'NULL'
 
 ### Description of config.py variables
 reddit_username, reddit_password, reddit_client_id, reddit_client_secret, and reddit_user_agent are about the details of the Reddit account.
