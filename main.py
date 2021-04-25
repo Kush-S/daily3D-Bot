@@ -5,7 +5,7 @@ import random
 import boto3
 from datetime import datetime
 
-def main(event, context):
+def main():
     NUMBER_OF_DAYS = config.reddit_days_of_recent_prompts
     MAX_PROMPT_CHECKS = config.reddit_max_prompt_checks
     recent_prompts = []
@@ -41,11 +41,11 @@ def main(event, context):
     # Make sure prompt has not been used in a while
     # Or just choose one if taking too long to decide
     if file_used != PRIORITY_PROMPTS_FILE:
-        if new_prompt_data.split('||')[0].strip() in recent_prompts:
+        if new_prompt_data.split('||')[0].strip().title() in recent_prompts:
             collisions = 0
             while collisions <= MAX_PROMPT_CHECKS:
                 new_prompt_data = generate_new_promp(available_prompts_data)
-                if new_prompt_data.split('||')[0].strip() not in recent_prompts:
+                if new_prompt_data.split('||')[0].strip().title() not in recent_prompts:
                     break
                 else:
                     collisions += 1
@@ -71,7 +71,7 @@ def get_recent_prompts(reddit, NUMBER_OF_DAYS):
     submissions = reddit.subreddit(config.reddit_subreddit).new(limit=NUMBER_OF_DAYS)
     for post in submissions:
         if post_prefix in post.title and "--" in post.title:
-            recent_prompts.append(post.title.split("--")[1])
+            recent_prompts.append(post.title.split("--")[1].title())
     return recent_prompts
 def check_aws_empty_file(file_name):
     aws_s3 = get_aws_s3_session()
