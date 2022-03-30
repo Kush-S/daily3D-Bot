@@ -12,6 +12,10 @@ To start running this bot on Lambda, copy code from 'main.py', and create 'confi
   - If not running on Lambda, change line #8 of program from
     - def main(event, context): to def main():
 
+
+ ![bot flow](images/bot_flow.png)
+
+
 ---
 ### File content
 * main.py
