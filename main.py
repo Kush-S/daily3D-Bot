@@ -5,7 +5,7 @@ import random
 import boto3
 from datetime import datetime
 
-def main():
+def main(event, context):
     NUMBER_OF_DAYS = config.reddit_days_of_recent_prompts
     MAX_PROMPT_CHECKS = config.reddit_max_prompt_checks
     recent_prompts = []
